@@ -1,0 +1,456 @@
+substitutions:
+  devicename: jura_f90
+  friendly_name: Coffee Machine
+
+esphome:
+  name: esphome-web-jura
+  platformio_options:
+    upload_speed: 115200
+  includes:
+    - jura_coffee_f90.h
+
+esp8266:
+  board: d1_mini
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: <<<KEY>>>
+
+ota:
+  password: ""
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: “${friendly_name} Fallback AP"
+    password: !secret fallback_ap_password
+
+captive_portal:
+    
+uart:
+  tx_pin: D1
+  rx_pin: D2
+  baud_rate: 9600
+  id: uart_bus
+  
+# UART bytes below have been generated with generate_esphome_jura_yaml.py
+# Tested with a Jura Impressa F90.
+# Many thanks to https://github.com/Rookie0ne who figured out the codes for the F9/F90 at https://github.com/ryanalden/esphome-jura-component/issues/4#issue-1022145065
+
+switch:
+  - platform: template
+    name: 'Coffee Machine'
+    icon: "mdi:coffee-maker"
+    id: jura_on_off_switch
+    turn_on_action:
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFF, 0xDB, 0xDF]  ## 'N'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDB, 0xDB, 0xFF, 0xDB]  ## '0'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xFF, 0xDB]  ## '1'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+
+    turn_off_action:
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFF, 0xDB, 0xDF]  ## 'N'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDB, 0xDB, 0xFF, 0xDB]  ## '0'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xDB, 0xFF, 0xDB]  ## '2'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+    optimistic: true
+    assumed_state: true
+
+  - platform: template
+    name: 'Rinse'
+    icon: "mdi:cup-water"
+    id: jura_rinse
+    turn_on_action:
+      - uart.write: [0xFB, 0xDF, 0xDB, 0xDF]  ## 'F'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDB, 0xDB, 0xFF, 0xDB]  ## '0'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xDB, 0xFF, 0xDB]  ## '2'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+
+  - platform: template
+    name: 'set_strength_low'
+    icon: "mdi:wifi-strength-1"
+    id: jura_strength_low
+    turn_on_action:
+      - uart.write: [0xFB, 0xDF, 0xDB, 0xDF]  ## 'F'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xFF, 0xDB]  ## '1'
+      - delay: 8ms
+      - uart.write: [0xDB, 0xDB, 0xFF, 0xDB]  ## '0'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+
+  - platform: template
+    name: 'set_strength_medium'
+    icon: "mdi:wifi-strength-2"
+    id: jura_strength_medium
+    turn_on_action:
+      - uart.write: [0xFB, 0xDF, 0xDB, 0xDF]  ## 'F'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xFF, 0xDB]  ## '1'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xFF, 0xDB]  ## '1'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+
+  - platform: template
+    name: 'set_strength_high'
+    icon: "mdi:wifi-strength-3"
+    id: jura_strength_high
+    turn_on_action:
+      - uart.write: [0xFB, 0xDF, 0xDB, 0xDF]  ## 'F'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xFF, 0xDB]  ## '1'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xDB, 0xFF, 0xDB]  ## '2'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+
+# CUP SIZE
+
+  - platform: template
+    name: 'Cup L'
+    icon: "mdi:size-l"
+    id: jura_size_l
+    turn_on_action:
+      - uart.write: [0xFB, 0xDF, 0xDB, 0xDF]  ## 'F'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDB, 0xDB, 0xFF, 0xDB]  ## '0'
+      - delay: 8ms
+      - uart.write: [0xDB, 0xDF, 0xDB, 0xDF]  ## 'D'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+
+  - platform: template
+    name: 'Cup M'
+    icon: "mdi:size-m"
+    id: jura_size_m
+    turn_on_action:
+      - uart.write: [0xFB, 0xDF, 0xDB, 0xDF]  ## 'F'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDB, 0xDB, 0xFF, 0xDB]  ## '0'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDF, 0xDB, 0xDF]  ## 'E'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+
+  - platform: template
+    name: 'Cup S'
+    icon: "mdi:size-s"
+    id: jura_size_s
+    turn_on_action:
+      - uart.write: [0xFB, 0xDF, 0xDB, 0xDF]  ## 'F'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDB, 0xDB, 0xFF, 0xDB]  ## '0'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xDF, 0xDB, 0xDF]  ## 'F'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+
+  - platform: template
+    name: 'Make Hot Water'
+    icon: "mdi:cup-water"
+    id: jura_make_hot_water
+    turn_on_action:
+      - uart.write: [0xFB, 0xDF, 0xDB, 0xDF]  ## 'F'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDB, 0xDB, 0xFF, 0xDB]  ## '0'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+
+  - platform: template
+    name: 'Powder Coffee'
+    icon: "mdi:spoon-sugar"
+    id: jura_set_powder
+    turn_on_action:
+      - uart.write: [0xFB, 0xDF, 0xDB, 0xDF]  ## 'F'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDB, 0xDB, 0xFF, 0xDB]  ## '0'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xDB, 0xDB, 0xDF]  ## 'B'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+
+  - platform: template
+    name: 'Preheat Steamer'
+    icon: "mdi:printer-3d-nozzle-heat-outline"
+    id: jura_preheat_steamer
+    turn_on_action:
+      - uart.write: [0xFB, 0xDF, 0xDB, 0xDF]  ## 'F'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDB, 0xDB, 0xFF, 0xDB]  ## '0'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFB, 0xFF, 0xDB]  ## '9'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+
+  - platform: template
+    name: '1 Cup'
+    icon: "mdi:numeric-1"
+    id: jura_1_cup
+    turn_on_action:
+      - uart.write: [0xFB, 0xDF, 0xDB, 0xDF]  ## 'F'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDB, 0xDB, 0xFF, 0xDB]  ## '0'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xDF, 0xFF, 0xDB]  ## '6'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+
+  - platform: template
+    name: '2 Cups'
+    icon: "mdi:numeric-2"
+    id: jura_2_cup
+    turn_on_action:
+      - uart.write: [0xFB, 0xDF, 0xDB, 0xDF]  ## 'F'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDB, 0xDB, 0xFF, 0xDB]  ## '0'
+      - delay: 8ms
+      - uart.write: [0xFF, 0xDF, 0xFF, 0xDB]  ## '7'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+
+  - platform: template
+    name: 'START'
+    icon: "mdi:at"
+    id: jura_start
+    turn_on_action:
+      - uart.write: [0xFB, 0xDF, 0xDB, 0xDF]  ## 'F'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xDB, 0xDF]  ## 'A'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xFF, 0xDB]  ## ':'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xDB, 0xFF, 0xDB]  ## '1'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFB, 0xFF, 0xDB]  ## '9'
+      - delay: 8ms
+      - uart.write: [0xDF, 0xFF, 0xDB, 0xDB]  ## '\r'
+      - delay: 8ms
+      - uart.write: [0xFB, 0xFB, 0xDB, 0xDB]  ## '\n'
+
+sensor:
+
+#  - platform: uptime
+#    name: "${devicename} Uptime"
+
+#  - platform: wifi_signal
+#    name: "${devicename} WiFi Signal"
+#    update_interval: 60s
+
+  - platform: template
+    id: jura_num_single_cup
+    name: "${devicename} Number Single Cup"
+    state_class: total_increasing
+    accuracy_decimals: 0
+    lambda: "return {};"
+
+  - platform: template
+    id: jura_num_double_cup
+    name: "${devicename} Number Double Cup"
+    state_class: total_increasing
+    accuracy_decimals: 0
+    lambda: "return {};"
+
+  - platform: template
+    id: jura_num_cup_S
+    name: "${devicename} Number Size S"
+    state_class: total_increasing
+    accuracy_decimals: 0
+    lambda: "return {};"
+
+  - platform: template
+    id: jura_num_cup_M
+    name: "${devicename} Number Size M"
+    state_class: total_increasing
+    accuracy_decimals: 0
+    lambda: "return {};"
+
+  - platform: template
+    id: jura_num_cup_L
+    name: "${devicename} Number Size L"
+    state_class: total_increasing
+    accuracy_decimals: 0
+    lambda: "return {};"
+
+  - platform: template
+    id: jura_num_powder
+    name: "${devicename} Number Powder"
+    state_class: total_increasing
+    accuracy_decimals: 0
+    lambda: "return {};"
+
+  - platform: template
+    id: jura_num_rinses
+    name: "${devicename} Number Rinses"
+    state_class: total_increasing
+    accuracy_decimals: 0
+    lambda: "return {};"
+
+  - platform: template
+    id: jura_num_clean
+    name: "${devicename} Cleanings Performed"
+    state_class: total_increasing
+    accuracy_decimals: 0
+    lambda: "return {};"
+
+  - platform: template
+    id: jura_num_unknown_descale
+    name: "${devicename} Descalings Performed (unknown)"
+    state_class: total_increasing
+    accuracy_decimals: 0
+    lambda: "return {};"
+
+  - platform: template
+    id: jura_bit_0
+    name: "${devicename} Bit 0"
+    lambda: "return {};"
+  
+  - platform: template
+    id: jura_bit_1
+    name: "${devicename} Bit 1"
+    lambda: "return {};"
+  
+  - platform: template
+    id: jura_bit_2
+    name: "${devicename} Bit 2"
+    lambda: "return {};"
+  
+  - platform: template
+    id: jura_bit_3
+    name: "${devicename} Bit 3"
+    lambda: "return {};"
+  
+  - platform: template
+    id: jura_bit_6
+    name: "${devicename} Bit 6"
+    lambda: "return {};"
+  
+  - platform: template
+    id: jura_bit_7
+    name: "${devicename} Bit 7"
+    lambda: "return {};"
+
+text_sensor:
+    
+  - platform: template
+    id: jura_tray_status
+    name: "${devicename} Tray Status"
+    lambda: "return {};"
+    
+  - platform: template
+    id: jura_tank_status
+    name: "${devicename} Water Tank Status"
+    lambda: "return {};"
+
+binary_sensor:
+  - platform: status
+    name: "${devicename} Status"
+
+# Custom component to poll coffee machine counters & status
+custom_component:
+- lambda: |-
+    auto my_jura = new JuraCoffee(id(uart_bus),id(jura_num_single_cup),id(jura_num_double_cup),id(jura_num_cup_S),id(jura_num_cup_M),id(jura_num_cup_L),id(jura_num_unknown_descale), id(jura_num_powder), id(jura_num_rinses), id(jura_num_clean), id(jura_tray_status),id(jura_tank_status), id(jura_bit_0),id(jura_bit_1), id(jura_bit_2),id(jura_bit_3),id(jura_bit_6), id(jura_bit_7));
+    App.register_component(my_jura);
+    return {my_jura};
